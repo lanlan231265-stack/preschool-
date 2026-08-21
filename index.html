@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>幼兒園法規、幼照法與非營利園務完整 QA 查詢系統</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Noto Sans TC', sans-serif; }
+    .badge-tag { transition: all 0.15s ease; }
+    .badge-tag:hover { transform: translateY(-1px); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- 頂部導航列 -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-30 border-b border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-400 text-slate-950 p-2.5 rounded-xl flex items-center justify-center shadow-inner">
+          <i class="fa-solid fa-scale-balanced text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold tracking-wide">幼兒園法規與非營利園務 QA 知識庫</h1>
+            <span class="bg-indigo-600 text-[10px] font-semibold px-2 py-0.5 rounded-full text-indigo-100">全功能完整版</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">收錄幼照法、教保條例、非營利辦法、考評、到園檢查、校安通報、事件調查與認定</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="toggleCalculator()" class="bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs sm:text-sm px-3.5 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-calculator"></i>
+          <span>生師比速算機</span>
+        </button>
+        <button onclick="toggleLawMap()" class="bg-indigo-700 hover:bg-indigo-600 text-white text-xs sm:text-sm px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-sitemap"></i>
+          <span>法規體系圖</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full">
+
+    <!-- 搜尋與篩選主區塊 -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
+      <!-- 關鍵字搜尋列 -->
+      <div class="relative mb-4">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <input type="text" id="searchInput" oninput="filterQA()" placeholder="輸入關鍵字、法規名稱、條號（例：績效考評、到園檢查、校安通報、調查小組、認定、生師比、第16條）..." 
+          class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition">
+        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+      </div>
+
+      <!-- 分類標籤按鈕 -->
+      <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100" id="categoryContainer">
+        <button onclick="setCategory('all')" class="category-btn active px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-900 text-white" data-cat="all">全部 QA (<span id="count-all">0</span>)</button>
+        <button onclick="setCategory('incident')" class="category-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="incident">通報、調查與認定 (<span id="count-incident">0</span>)</button>
+        <button onclick="setCategory('nonprofit')" class="category-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="nonprofit">非營利園務與考評 (<span id="count-nonprofit">0</span>)</button>
+        <button onclick="setCategory('ratio')" class="category-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="ratio">生師比與班級編制 (<span id="count-ratio">0</span>)</button>
+        <button onclick="setCategory('hr')" class="category-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="hr">人事進用與薪資進修 (<span id="count-hr">0</span>)</button>
+        <button onclick="setCategory('finance')" class="category-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="finance">收退費與補助規範 (<span id="count-finance">0</span>)</button>
+        <button onclick="setCategory('facility')" class="category-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-100 text-slate-600 hover:bg-slate-200" data-cat="facility">設施設備與到園檢查 (<span id="count-facility">0</span>)</button>
+      </div>
+    </div>
+
+    <!-- 檢索統計資訊 -->
+    <div class="flex justify-between items-center mb-4 px-1">
+      <div class="text-xs sm:text-sm text-slate-500 font-medium">
+        符合條件共 <span id="displayedCount" class="text-indigo-900 font-bold">0</span> 筆法規 QA
+      </div>
+      <div class="text-xs text-slate-400">
+        點擊「法規依據」可展開檢視法條核心原文與實務行政提醒
+      </div>
+    </div>
+
+    <!-- QA 清單容器 -->
+    <div id="qaList" class="space-y-4">
+      <!-- 動態載入 -->
+    </div>
+
+    <!-- 空狀態 -->
+    <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300">
+      <div class="w-14 h-14 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+        <i class="fa-solid fa-file-circle-question text-2xl"></i>
+      </div>
+      <h3 class="text-base font-semibold text-slate-700">查無相符的法規條文或問答</h3>
+      <p class="text-xs text-slate-400 mt-1">請嘗試簡化關鍵字或點擊上方「全部 QA」按鈕</p>
+      <button onclick="clearSearch()" class="mt-4 px-4 py-2 bg-indigo-50 text-indigo-700 text-xs rounded-lg hover:bg-indigo-100 font-medium transition">清除所有篩選條件</button>
+    </div>
+
+  </main>
+
+  <!-- 法規體系架構 Modal -->
+  <div id="lawMapModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 relative border border-slate-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+        <div class="flex items-center gap-2 text-slate-900 font-bold text-base">
+          <i class="fa-solid fa-sitemap text-indigo-600"></i>
+          <span>幼兒園與非營利法規完整體系圖</span>
+        </div>
+        <button onclick="toggleLawMap()" class="text-slate-400 hover:text-slate-600 text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs leading-relaxed text-slate-700">
+        <div class="bg-indigo-50/60 p-3.5 rounded-xl border border-indigo-100">
+          <h4 class="font-bold text-indigo-950 text-sm mb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-landmark text-indigo-600"></i> 1. 母法核心
+          </h4>
+          <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
+            <li><strong>《幼兒教育及照顧法》</strong>：規範幼兒園設立許可、招收年齡、生師比、收退費、安全管理與罰則。</li>
+            <li><strong>《教保服務人員條例》</strong>：規範教保人員資格進用、權利義務、申訴、在職研習、違法事件懲處。</li>
+          </ul>
+        </div>
+
+        <div class="bg-amber-50/60 p-3.5 rounded-xl border border-amber-100">
+          <h4 class="font-bold text-amber-950 text-sm mb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-hand-holding-heart text-amber-600"></i> 2. 非營利幼兒園專管法規
+          </h4>
+          <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
+            <li><strong>《非營利幼兒園實施辦法》</strong>：非營利委託營運、營運成本、薪資支給、學年績效考評與退場機制。</li>
+            <li><strong>《非營利幼兒園薪資支給基準表》</strong>：各學歷與職等敘薪起點、年資晉級規範。</li>
+          </ul>
+        </div>
+
+        <div class="bg-rose-50/60 p-3.5 rounded-xl border border-rose-100">
+          <h4 class="font-bold text-rose-950 text-sm mb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved text-rose-600"></i> 3. 通報、調查程序與裁罰認定
+          </h4>
+          <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
+            <li><strong>《教保相關人員違法事件調查處理辦法》</strong>：24小時通報、審查小組、人才庫調查小組運作時限。</li>
+            <li><strong>《教保相關人員違法對待幼兒事件裁量基準》</strong>：認定委員會審議、情節重大判定、終身/1~4年禁聘。</li>
+            <li><strong>教育部《校園安全暨災害防救通報處理中心作業規定》</strong>：校安通報機制與時限。</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+          <h4 class="font-bold text-slate-900 text-sm mb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-school-flag text-slate-600"></i> 4. 到園檢查、設施設備與日常運作
+          </h4>
+          <ul class="list-disc list-inside space-y-1 text-slate-600 pl-1">
+            <li><strong>《幼照法》第45條/《幼兒園評鑑辦法》</strong>：到園檢查、基礎評鑑重點項目與拒檢罰則。</li>
+            <li><strong>《幼兒園及其分班基本設施設備標準》</strong>：活動室面積（每生2.5m²）、盥洗室衛生設備配比。</li>
+            <li><strong>《各縣市幼兒園收退費辦法》</strong>：在園日數折算退費基準、傳染病停課退費規範。</li>
+            <li><strong>《幼童專用車輛管理辦法》</strong>：娃娃車10年汰換上限、專任隨車照護人員配置。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-5 text-right">
+        <button onclick="toggleLawMap()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition">關閉體系圖</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 生師比速算機 Modal -->
+  <div id="calcModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 relative border border-slate-100">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+        <div class="flex items-center gap-2 text-slate-900 font-bold text-base">
+          <i class="fa-solid fa-calculator text-amber-500"></i>
+          <span>幼兒園班級生師比與員額速算機</span>
+        </div>
+        <button onclick="toggleCalculator()" class="text-slate-400 hover:text-slate-600 text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-sm">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">班級年齡類型</label>
+          <select id="calcClassType" onchange="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <option value="2yo">2歲專班（幼幼班）— 1:8（上限16人）</option>
+            <option value="3to6_12">3歲至入小學前（調降生師比目標 1:12，上限24人）</option>
+            <option value="3to6_15">3歲至入小學前（法定基準 1:15，上限30人）</option>
+            <option value="mixed">混齡班（含2歲幼兒者從嚴適用2歲專班）</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">班級預計收托幼兒人數</label>
+          <input type="number" id="calcChildCount" value="16" min="1" max="40" oninput="runCalculation()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+
+        <!-- 試算結果呈現 -->
+        <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-4 mt-3 space-y-2">
+          <div class="flex justify-between items-center text-xs text-slate-700">
+            <span>法定每班人數上限：</span>
+            <span id="resMaxChildren" class="font-bold text-indigo-950">16 人</span>
+          </div>
+          <div class="flex justify-between items-center text-xs text-slate-700">
+            <span>應配置法定教保服務人員：</span>
+            <span id="resTeacherCount" class="font-bold text-indigo-950 text-sm">2 名</span>
+          </div>
+          <div class="flex justify-between items-center text-xs text-slate-700">
+            <span>班級狀態研判：</span>
+            <span id="resStatus" class="font-bold text-emerald-600">合規</span>
+          </div>
+          <p id="resNote" class="text-xs text-slate-500 border-t border-indigo-100/60 pt-2 mt-2 leading-relaxed">
+            依幼照法第16條：2歲專班每班以16人為限，生師比 1:8。招收8人以下應置1名，9人至16人應置2名教保服務人員。不得與其他年齡幼兒混齡。
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-5 text-right">
+        <button onclick="toggleCalculator()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 頁尾 -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-8">
+    <div class="max-w-6xl mx-auto px-4 text-center text-xs text-slate-400 space-y-1">
+      <p>幼兒園法規與非營利園務 QA 知識庫系統 · 參照教育部全國法規資料庫及最新函釋製作</p>
+      <p>實務個案請依教育部及各直轄市、縣（市）政府主管機關最新法規與裁量為準。</p>
+    </div>
+  </footer>
+
+  <!-- 完整詳細法規 QA 資料庫與系統邏輯 -->
+  <script>
+    const qaData = [
+      // 1. 通報、調查與認定
+      {
+        id: "qa-rep-01",
+        category: "incident",
+        categoryName: "通報、調查與認定",
+        question: "幼兒園發生重大意外或疑似違法對待案件時，「校安通報」與「兒少保護責任通報」的通報時限與管道為何？",
+        answer: "知悉事件後必須於「24 小時之內」完成法定通報（重大危安事件應於 2 小時內初報）。必須採雙軌通報：1. 教育部「校園安全暨災害防救通報處理中心」（校安系統）；2. 衛生福利部「關懷 E 起來」（兒少保護通報）。未依法於24小時內通報者，處負責人 3 萬至 15 萬元罰鍰。",
+        lawSource: "《教保相關人員違法事件調查處理辦法》第 4 條、《幼兒教育及照顧法》第 40 條、第 53 條、《兒童及少年福利與權益保障法》第 53 條",
+        lawText: "教保服務機構之負責人或其他服務人員，知悉機構有教保相關人員涉有違法事件者，應立即向直轄市、縣（市）主管機關通報，至遲不得超過二十四小時。",
+        note: "通報原則為「知悉即報」，不以確認成案或調查屬實為前提。延遲通報、隱匿不報或私下和解皆屬違法態樣。",
+        tags: ["校安通報", "責任通報", "24小時通報", "關懷E起來", "雙軌通報", "隱匿通報裁罰", "幼照法第40條"]
+      },
+      {
+        id: "qa-inv-01",
+        category: "incident",
+        categoryName: "通報、調查與認定",
+        question: "疑似違法對待幼兒事件啟動調查後，「審查小組」與「調查小組」的組成、調查期限與被調查人處置為何？",
+        answer: "主管機關接獲通報或檢舉後 20 日內召開「審查小組」決定是否受理；受理後應組成全數外聘的「調查小組」（自教育部人才庫遴選專家）。調查小組應於 30 日內完成調查報告（必要時得延長 30 日）。調查期間，幼兒園應將被調查人員調離現職或命其請假暫離教學現場。",
+        lawSource: "《教保相關人員違法事件調查處理辦法》第 6 條、第 8 條、第 11 條、第 13 條",
+        lawText: "直轄市、縣（市）主管機關應自接獲檢舉或通報之次日起二十日內召開審查小組會議決定是否受理。調查小組應由教育部調查人才庫之專家學者組成。調查小組應於召開第一次會議之次日起三十日內完成調查；必要時，得予延長，延長期間不得逾三十日。",
+        note: "園所應完整保全事發前後至少 30 日之監視器影音檔案及班級聯絡簿、日誌紀錄，不得藉故洗掉或拒絕提供。",
+        tags: ["違法事件調查", "審查小組", "調查人才庫", "30日調查時限", "暫調現職", "調查處理辦法"]
+      },
+      {
+        id: "qa-det-01",
+        category: "incident",
+        categoryName: "通報、調查與認定",
+        question: "調查小組完成報告後，如何由「認定委員會」審議是否屬「情節重大」？違法處分與不適任登錄機制為何？",
+        answer: "主管機關召開「認定委員會」審議調查報告。委員會依行為人之動機、目的、手段、侵害次數、受害幼兒人數、身心傷害程度及犯後態度綜合判定。若屬情節重大，處 6 萬至 60 萬元罰鍰，並宣告「終身」或「1 至 4 年」不得聘任進用，並登錄至全國教保服務機構不適任人員資料庫公告姓名。",
+        lawSource: "《教保服務人員條例》第 33 條、第 40 條、《教保相關人員違法對待幼兒事件裁量基準》",
+        lawText: "教保相關人員對幼兒有身心虐待、情節重大之體罰、霸凌、性侵害、性騷擾或不當管教者，處新臺幣六萬元以上六十萬元以下罰鍰，並得公布機構名稱及行為人姓名；情節重大者，由直轄市、縣（市）主管機關認定終身或一年至四年不得聘任、任用、進用或運用。",
+        note: "非情節重大之不當管教案件，主管機關得命其接受一定時數之正向管教、情緒管理或班級經營研習與輔導改善計畫。",
+        tags: ["違法認定", "認定委員會", "情節重大", "終身禁聘", "裁量基準", "不適任登錄", "教保條例第40條"]
+      },
+      {
+        id: "qa-inc-03",
+        category: "incident",
+        categoryName: "通報、調查與認定",
+        question: "疑似違法事件調查期間，幼兒園監視器錄影畫面保全責任與保存年限規定為何？",
+        answer: "園所應妥善保存監視器影音資料至少 30 日（涉及案件者應永久保全相關時段至調查終結）。規避、妨礙或拒絕提供監視影像者，最高處新臺幣 30 萬元罰鍰。",
+        lawSource: "《幼兒教育及照顧法》第 42 條、《教保相關人員違法事件調查處理辦法》第 14 條",
+        lawText: "幼兒園應妥善保存監視錄影資料至少三十日。主管機關或調查小組依法進行調查時，幼兒園及教保相關人員不得規避、妨礙或拒絕提供影音資料。",
+        note: "園所隱匿、刪除、竄改錄影畫面者，除行政重罰外，可能觸犯刑法湮滅證據罪嫌。",
+        tags: ["監視器保存", "30日保全", "妨礙調查罰則", "幼照法第42條"]
+      },
+
+      // 2. 非營利園務與考評
+      {
+        id: "qa-eval-01",
+        category: "nonprofit",
+        categoryName: "非營利園務與考評",
+        question: "非營利幼兒園「學年度績效考評」之指標、評分等第與續約標準為何？",
+        answer: "考評包含「契約履行、行政管理、教保活動與環境安全、財務管理」四大面向。總分 80 分以上為甲等（良等），具備原址續約 4 年資格；70~79 分為乙等需限期改善；未滿 70 分或連續 2 年未達 80 分者，主管機關應終止契約並重新招標。",
+        lawSource: "《非營利幼兒園實施辦法》第 29 條、第 30 條、第 31 條",
+        lawText: "直轄市、縣（市）主管機關每學年應對非營利幼兒園辦理績效考評。考評結果達八十分以上者，得於契約屆滿前申請繼續委託辦理；未達八十分者，應命其限期改善；連續二學年未達八十分或經考評未達七十分者，主管機關應終止契約。",
+        note: "考評委員由主管機關遴聘教保專家、財務會計專家、家長代表及機關代表組成，考評前 1 個月應公告受評期程與受檢表冊清單。",
+        tags: ["績效考評", "非營利續約", "四大考評向度", "退場機制", "非營利實施辦法第29條"]
+      },
+      {
+        id: "qa-np-01",
+        category: "nonprofit",
+        categoryName: "非營利園務與考評",
+        question: "非營利幼兒園教保人員之薪資支給基準與年資晉級規則為何？",
+        answer: "依教育部公告之「非營利幼兒園薪資支給基準表」起敘。每學年考核結果達「良等（80分）」以上者得晉一級薪資；於同類受委託非營利幼兒園服務年資得依法併計。",
+        lawSource: "《非營利幼兒園實施辦法》第 17 條",
+        lawText: "非營利幼兒園之教保服務人員及其他人員，其薪資應依非營利幼兒園薪資支給基準表之規定辦理。前項人員每學年考核結果達良等以上者，得晉一級薪資；其年資得在同一直轄市、縣（市）之非營利幼兒園相互併計。",
+        note: "留職停薪（如育嬰留停）復職後，其留停前已有年資繼續累計，但不採計留停期間年資晉薪。",
+        tags: ["薪資支給", "年資併計", "考核晉薪", "留職停薪", "非營利實施辦法第17條"]
+      },
+      {
+        id: "qa-np-02",
+        category: "nonprofit",
+        categoryName: "非營利園務與考評",
+        question: "非營利幼兒園家長每月繳費上限及政府補助款如何運作？園所能否另收註冊費？",
+        answer: "家長每月負擔第 1 胎上限 2,000 元、第 2 胎上限 1,000 元、第 3 胎以上及低收/中低收免費。非營利幼兒園採免繳註冊費，營運成本與家長繳費之差額由政府專款全額補助。",
+        lawSource: "《非營利幼兒園實施辦法》第 21 條、第 22 條",
+        lawText: "非營利幼兒園營運成本，由主管機關按各非營利幼兒園核定之收費標準，與幼兒家長應繳交費用之差額，予以全額補助。非營利幼兒園不得向幼兒家長收取未經核定之各項費用。",
+        note: "非營利幼兒園不得巧立名目向家長收取未經主管機關核備之材料費、活動費或設備費。",
+        tags: ["家長繳費上限", "2000元", "營運成本", "禁收註冊費", "非營利實施辦法第21條"]
+      },
+
+      // 3. 生師比與班級編制
+      {
+        id: "qa-ratio-01",
+        category: "ratio",
+        categoryName: "生師比與班級編制",
+        question: "2歲幼幼班的生師比、每班人數上限為何？是否可以與3歲以上幼兒混齡？",
+        answer: "2歲專班生師比為 1:8，每班人數上限為 16 人（招收 8 人以下應置 1 名教保服務人員，9～16 人應置 2 名）。原則上嚴禁與其他年齡幼兒混齡編班。",
+        lawSource: "《幼兒教育及照顧法》第 16 條第 1 項、第 2 項",
+        lawText: "幼兒園二歲以上至三歲未滿幼兒之班級，每班以十六人為限，不得與其他年齡幼兒混齡；招收幼兒八人以下者，應置教保服務人員一人，九人以上者，應置教保服務人員二人。",
+        note: "離島、偏遠或原住民族地區，因幼兒人數不足報經主管機關同意者始得混齡，但混齡班全班人數上限及生師比仍應依2歲班規定從嚴計算。",
+        tags: ["生師比", "2歲專班", "混齡班", "人數上限", "幼照法第16條"]
+      },
+      {
+        id: "qa-ratio-02",
+        category: "ratio",
+        categoryName: "生師比與班級編制",
+        question: "3歲至入國民小學前班級，調降生師比至 1:12 的政策推動規範與法定基準為何？",
+        answer: "法定基準上限為每班 30 人、生師比 1:15（15人以下置1人，16~30人置2人）。教育部自112學年度起推動公立與非營利幼兒園逐年調降至 1:12（每班以24人為目標）。",
+        lawSource: "《幼兒教育及照顧法》第 16 條第 1 項暨《教育部調降幼兒園生師比推動策略》",
+        lawText: "三歲以上至入國民小學前幼兒之班級，每班以三十人為限；招收幼兒十五人以下者，應置教保服務人員一人，十六人以上者，應置教保服務人員二人。",
+        note: "非營利幼兒園配合調降生師比所產生之營運成本差額，由教育部專案經費全額補助，不得向幼兒家長額外加收費用。",
+        tags: ["調降生師比", "1:12", "非營利補助", "班級編制", "幼照法第16條"]
+      },
+      {
+        id: "qa-ratio-03",
+        category: "ratio",
+        categoryName: "生師比與班級編制",
+        question: "幼兒園園長（主任）兼任教保服務人員時，是否有減授教保活動時數之規定？",
+        answer: "依班級規模規定，招收幼兒達一定人數之幼兒園應置專任園長。若經主管機關核准由教師或教保員兼任園長者，其每週教保活動時數應依各主管機關規定辦理減授。",
+        lawSource: "《幼兒教育及照顧法》第 16 條第 3 項、第 4 項",
+        lawText: "幼兒園除專任園長外，每招收幼兒六十人，應置專任教保服務人員一人；其餘未滿六十人者，得置兼任或專任教保服務人員一人。兼任主任或主管職務者，得減授教學或教保服務時數。",
+        note: "非營利幼兒園園長為專任行政職，不計入班級生師比之教保服務人員員額計算。",
+        tags: ["專任園長", "減授時數", "行政編制", "幼照法第16條"]
+      },
+
+      // 4. 人事進用與薪資進修
+      {
+        id: "qa-hr-01",
+        category: "hr",
+        categoryName: "人事進用與薪資進修",
+        question: "教保服務人員每年及每兩年法定的在職進修與急救訓練時數規定為何？",
+        answer: "教保服務人員每年至少應參加教保專業知能研習「18 小時以上」；且每 2 年內應接受基本救命術（BLS）訓練「8 小時以上」及安全教育研習。",
+        lawSource: "《教保服務人員條例》第 27 條第 1 項、第 2 項",
+        lawText: "教保服務人員每年應參加教保專業知能研習十八小時以上。教保服務人員任職後，每二年應接受基本救命術訓練八小時以上、安全教育研習及緊急救護相關研習。",
+        note: "幼兒園應主動規劃或核予公假供人員參與研習。未符時數規定將列入主管機關行政檢查缺失並限期改善。",
+        tags: ["在職進修", "18小時", "基本救命術", "BLS", "教保條例第27條"]
+      },
+      {
+        id: "qa-hr-02",
+        category: "hr",
+        categoryName: "人事進用與薪資進修",
+        question: "幼兒園進用未具教保服務人員資格之人從事教學，會有何種處罰？",
+        answer: "處幼兒園負責人或行為人新臺幣 6 萬元以上 30 萬元以下罰鍰，並令限期改善；屆期未改善者得按次處罰，情節重大者得減招、停止招生或廢止許可。",
+        lawSource: "《教保服務人員條例》第 38 條第 1 款、《幼兒教育及照顧法》第 51 條",
+        lawText: "幼兒園有下列情形之一者，處負責人或行為人新臺幣六萬元以上三十萬元以下罰鍰，並命其限期改善；屆期未改善者，得按次處罰：一、進用未具教保服務人員資格之人從事教保服務。",
+        note: "短期請假得以合格代理教保員進用；若連續甄選確無合格人員，應檢附甄選紀錄報直轄市、縣（市）教育主管機關專案核准代理。",
+        tags: ["資格不符", "非法進用", "罰鍰裁罰", "代理教師", "教保條例第38條"]
+      },
+      {
+        id: "qa-hr-03",
+        category: "hr",
+        categoryName: "人事進用與薪資進修",
+        question: "教保服務人員有性侵害、身心虐待或情節重大體罰前科者，如何進行任用消極資格查證？",
+        answer: "幼兒園聘任教保人員前，應至全國「教保服務機構不適任人員通報查詢系統」進行查詢，並應請應徵者檢附最近三個月內核發之警察刑事紀錄證明（良民證）。",
+        lawSource: "《教保服務人員條例》第 12 條、第 13 條、第 14 條",
+        lawText: "教保服務機構聘任、任用、進用或運用教保相關人員前，應查詢其有無第十二條第一項各款情事。直轄市、縣（市）主管機關應辦理通報、資訊之蒐集、查詢及處理利用。",
+        note: "進用前未依法辦理查詢者，處負責人新臺幣 5 萬元以上 25 萬元以下罰鍰，並令限期改善。",
+        tags: ["消極資格", "不適任通報", "良民證", "背景查核", "教保條例第12條"]
+      },
+
+      // 5. 收退費與補助規範
+      {
+        id: "qa-fin-01",
+        category: "finance",
+        categoryName: "收退費與補助規範",
+        question: "幼兒中途入園或學期中離園，學費、雜費與代辦費之退費折算比例原則為何？",
+        answer: "學費與雜費依各縣市自治規定按在園週數或就讀日數比例折算（通常學期未逾1/3退還2/3，逾1/3未逾2/3退還1/3，逾2/3不退）；代辦費（餐點、延托）則按未就讀天數覈實退還。",
+        lawSource: "《幼兒教育及照顧法》第 43 條第 2 項及各縣市幼兒園收退費辦法",
+        lawText: "幼兒因故無法就讀而離園者，幼兒園應依幼兒就讀日數或週數，按各直轄市、縣（市）主管機關所定退費基準，退還幼兒家長繳交之各項費用。",
+        note: "家長繳費後尚未開學即提出離園者，幼兒園應全額退還繳納之各項費用（部分縣市得扣除行政手續費上限數百元）。",
+        tags: ["收退費基準", "學費退費", "代辦費覈實", "比例折算", "幼照法第43條"]
+      },
+      {
+        id: "qa-fin-02",
+        category: "finance",
+        categoryName: "收退費與補助規範",
+        question: "幼兒因法定傳染病（如腸病毒、流感）配合停課達一定天數時，是否應主動退還餐點費？",
+        answer: "是的。因傳染病或不可抗力配合園所停課連續達一定日數以上（各縣市多訂為連續 5 日或 7 日以上），代辦費中的點心費、午餐費與交通費應按停課上課日數比例主動退還家長。",
+        lawSource: "各直轄市、縣（市）幼兒園收費及退費辦法規定",
+        lawText: "幼兒因法定傳染病、流行病或流行性疫情配合停課連續達一定日數以上者，幼兒園應按停課日數退還停課期間之點心費、午餐費、交通費等代辦費用。",
+        note: "例假日、國定假日不計入停課退費之天數計算。",
+        tags: ["收退費辦法", "腸病毒停課", "餐點費退費", "防疫停課"]
+      },
+
+      // 6. 設施設備與到園檢查
+      {
+        id: "qa-insp-01",
+        category: "facility",
+        categoryName: "設施設備與到園檢查",
+        question: "主管機關辦理幼兒園「到園檢查」與「基礎評鑑」之查核項目有哪些？拒絕檢查有何罰則？",
+        answer: "到園檢查與基礎評鑑重點涵蓋：設施設備與消防安全、生師比與教保人員進用資格、各項收退費與收據開立、衛生保健與飲用水檢驗、食材登錄平台登載及監視錄影保存。幼兒園規避、妨礙或拒絕檢查者，處負責人 6 萬元以上 30 萬元以下罰鍰，並得按次處罰。",
+        lawSource: "《幼兒教育及照顧法》第 45 條、第 46 條、第 55 條第 1 款",
+        lawText: "直轄市、縣（市）主管機關為掌握幼兒園辦理狀況，得對幼兒園進行檢查、輔導或評鑑。幼兒園規避、妨礙或拒絕前條第一項之檢查、輔導或評鑑者，處負責人新臺幣六萬元以上三十萬元以下罰鍰，並得按次處罰。",
+        note: "到園檢查人員應出示公務身分證明文件；園方應指派熟悉業務之主管或人員陪同並備妥受檢資料（人事差勤名冊、退費清冊、水質檢測報告等）。",
+        tags: ["到園檢查", "基礎評鑑", "行政檢查", "妨礙檢查罰則", "幼照法第45條"]
+      },
+      {
+        id: "qa-fac-01",
+        category: "facility",
+        categoryName: "設施設備與到園檢查",
+        question: "幼兒園室內活動室面積每生法定標準為何？幼兒專用盥洗室便器配比規定為何？",
+        answer: "室內活動室面積扣除走廊及固定設施，每生至少「2.5 平方公尺」；大便器配比為每 10 人設 1 個、小便器每 15 人設 1 個、洗手台每 10 人設 1 個（高度依幼兒人體工學設計）。",
+        lawSource: "《幼兒園及其分班基本設施設備標準》第 8 條、第 11 條",
+        lawText: "室內活動室之樓地板面積，幼兒每人均應達二點五平方公尺以上。幼兒專用盥洗室應設置適合幼兒使用之衛生設備：大便器每十人設一個，小便器每十五人設一個，洗手檯每十人設一個。",
+        note: "2歲專班之專用活動室及盥洗室應設於一樓為原則，且不得與3歲以上班級共用大便器。",
+        tags: ["設施設備標準", "室內活動室", "2.5平方公尺", "盥洗室配比", "衛生設備"]
+      },
+      {
+        id: "qa-fac-02",
+        category: "facility",
+        categoryName: "設施設備與到園檢查",
+        question: "幼兒園幼童專用車（娃娃車）之車齡上限及隨車照護人員配置規定為何？",
+        answer: "幼童專用車車齡自出廠日起算不得超過「10 年」（逾 10 年應強制汰換）。載運幼兒時，每車必須配置「專任隨車照護人員至少 1 名」（駕駛不得兼任隨車照護）。",
+        lawSource: "《幼兒教育及照顧法》第 30 條、《幼兒園幼童專用車輛與幼童專用車駕駛人管理辦法》第 4 條、第 9 條",
+        lawText: "幼童專用車輛之車齡，自出廠日起算，不得逾十年；逾十年者，應予汰換。幼童專用車載運幼兒時，應配置具教保服務人員資格或年滿二十歲之隨車人員一人。",
+        note: "違規使用逾齡車輛或未配置隨車人員者，處負責人新臺幣 6,000 元以上 30,000 元以下罰鍰，並限期改善及得按次處罰。",
+        tags: ["幼童專用車", "娃娃車10年", "隨車人員", "交通安全", "幼照法第30條"]
+      }
+    ];
+
+    let currentCategory = 'all';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateCategoryCounts();
+      renderQA();
+    });
+
+    function updateCategoryCounts() {
+      document.getElementById('count-all').innerText = qaData.length;
+      const categories = ['incident', 'nonprofit', 'ratio', 'hr', 'finance', 'facility'];
+      categories.forEach(cat => {
+        const count = qaData.filter(item => item.category === cat).length;
+        const el = document.getElementById(`count-${cat}`);
+        if (el) el.innerText = count;
+      });
+    }
+
+    function renderQA() {
+      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+      const listEl = document.getElementById('qaList');
+      const emptyEl = document.getElementById('emptyState');
+      const countEl = document.getElementById('displayedCount');
+
+      const filtered = qaData.filter(item => {
+        const matchCat = (currentCategory === 'all' || item.category === currentCategory);
+        const matchKw = !keyword || 
+          item.question.toLowerCase().includes(keyword) ||
+          item.answer.toLowerCase().includes(keyword) ||
+          item.lawSource.toLowerCase().includes(keyword) ||
+          item.lawText.toLowerCase().includes(keyword) ||
+          item.tags.some(tag => tag.toLowerCase().includes(keyword));
+        return matchCat && matchKw;
+      });
+
+      countEl.innerText = filtered.length;
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+      listEl.innerHTML = filtered.map(item => createCardHTML(item)).join('');
+    }
+
+    function createCardHTML(item) {
+      return `
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition duration-200">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="bg-indigo-50 text-indigo-900 text-xs font-semibold px-2.5 py-1 rounded-md border border-indigo-100">${item.categoryName}</span>
+              ${item.tags.map(tag => `<span class="badge-tag bg-slate-100 text-slate-600 text-[11px] px-2 py-0.5 rounded cursor-pointer" onclick="quickTagSearch('${tag}')">#${tag}</span>`).join('')}
+            </div>
+            <button onclick="copyQA('${item.id}')" class="text-slate-400 hover:text-indigo-600 text-xs flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-slate-50 border border-slate-100 transition" title="複製此題完整問答">
+              <i class="fa-regular fa-copy"></i>
+              <span id="copy-text-${item.id}">複製</span>
+            </button>
+          </div>
+
+          <h2 class="text-base font-bold text-slate-900 mb-2 flex items-start gap-2">
+            <span class="text-amber-500 font-extrabold text-lg leading-none mt-0.5">Q.</span>
+            <span>${item.question}</span>
+          </h2>
+
+          <div class="text-sm text-slate-700 leading-relaxed mb-4 pl-4 border-l-2 border-indigo-500 bg-slate-50/50 py-1.5 rounded-r-lg">
+            <div class="font-medium text-slate-900">${item.answer}</div>
+          </div>
+
+          <!-- 折疊展開區：法條與行政提醒 -->
+          <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/80 text-xs space-y-2">
+            <div class="flex items-center justify-between cursor-pointer" onclick="toggleAccordion('${item.id}')">
+              <div class="flex items-center gap-2 font-semibold text-slate-800">
+                <i class="fa-solid fa-book-bookmark text-indigo-700"></i>
+                <span>法規依據：${item.lawSource}</span>
+              </div>
+              <div class="flex items-center gap-1 text-slate-400">
+                <span class="text-[11px]">查看法條原文</span>
+                <i id="icon-${item.id}" class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
+              </div>
+            </div>
+            
+            <div id="content-${item.id}" class="hidden pt-2 border-t border-slate-200/80 space-y-2">
+              <div class="bg-white p-3 rounded-lg border border-slate-200 text-slate-700 leading-relaxed">
+                <div class="font-bold text-slate-900 mb-1 flex items-center gap-1 text-xs">
+                  <i class="fa-solid fa-scale-unbalanced-flip text-indigo-600"></i> 【法條核心原文】
+                </div>
+                ${item.lawText}
+              </div>
+              ${item.note ? `
+              <div class="bg-amber-50 p-3 rounded-lg border border-amber-200/80 text-amber-950 leading-relaxed">
+                <span class="font-bold flex items-center gap-1 mb-0.5 text-amber-900">
+                  <i class="fa-solid fa-triangle-exclamation text-amber-600"></i> 實務行政與查核提醒：
+                </span>
+                ${item.note}
+              </div>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        if (btn.dataset.cat === cat) {
+          btn.className = 'category-btn active px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-900 text-white';
+        } else {
+          btn.className = 'category-btn px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition bg-slate-100 text-slate-600 hover:bg-slate-200';
+        }
+      });
+      renderQA();
+    }
+
+    function quickTagSearch(tag) {
+      document.getElementById('searchInput').value = tag;
+      filterQA();
+    }
+
+    function filterQA() {
+      const searchVal = document.getElementById('searchInput').value;
+      const clearBtn = document.getElementById('clearSearchBtn');
+      if (searchVal.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+      renderQA();
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      setCategory('all');
+      renderQA();
+    }
+
+    function toggleAccordion(id) {
+      const content = document.getElementById(`content-${id}`);
+      const icon = document.getElementById(`icon-${id}`);
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
+    function copyQA(id) {
+      const item = qaData.find(q => q.id === id);
+      if (!item) return;
+      const textToCopy = `【幼兒園法規QA】${item.question}\n【核心解答】${item.answer}\n【法規依據】${item.lawSource}\n【法條原文】${item.lawText}\n${item.note ? '【行政提醒】' + item.note : ''}`;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const textSpan = document.getElementById(`copy-text-${id}`);
+        textSpan.innerText = '已複製！';
+        setTimeout(() => { textSpan.innerText = '複製'; }, 2000);
+      });
+    }
+
+    function toggleCalculator() {
+      const modal = document.getElementById('calcModal');
+      modal.classList.toggle('hidden');
+      if (!modal.classList.contains('hidden')) {
+        runCalculation();
+      }
+    }
+
+    function toggleLawMap() {
+      const modal = document.getElementById('lawMapModal');
+      modal.classList.toggle('hidden');
+    }
+
+    function runCalculation() {
+      const type = document.getElementById('calcClassType').value;
+      const count = parseInt(document.getElementById('calcChildCount').value) || 0;
+      
+      const maxEl = document.getElementById('resMaxChildren');
+      const teacherEl = document.getElementById('resTeacherCount');
+      const statusEl = document.getElementById('resStatus');
+      const noteEl = document.getElementById('resNote');
+
+      let maxAllowed = 30;
+      let reqTeachers = 2;
+      let isCompliant = true;
+      let noteText = "";
+
+      if (type === '2yo') {
+        maxAllowed = 16;
+        if (count <= 8) {
+          reqTeachers = 1;
+        } else if (count <= 16) {
+          reqTeachers = 2;
+        } else {
+          reqTeachers = Math.ceil(count / 8);
+          isCompliant = false;
+        }
+        noteText = "依幼照法第16條：2歲專班每班以16人為限，生師比 1:8。招收8人以下置1人，9~16人置2人。嚴禁超收或混齡。";
+      } else if (type === '3to6_12') {
+        maxAllowed = 24;
+        if (count <= 12) {
+          reqTeachers = 1;
+        } else if (count <= 24) {
+          reqTeachers = 2;
+        } else {
+          reqTeachers = Math.ceil(count / 12);
+          isCompliant = false;
+        }
+        noteText = "調降生師比方案：3歲以上班級以 1:12 為推動目標，每班招收上限為24人（置2人），12人以下置1人。";
+      } else if (type === '3to6_15') {
+        maxAllowed = 30;
+        if (count <= 15) {
+          reqTeachers = 1;
+        } else if (count <= 30) {
+          reqTeachers = 2;
+        } else {
+          reqTeachers = Math.ceil(count / 15);
+          isCompliant = false;
+        }
+        noteText = "依幼照法第16條：3歲至入小學前班級法定上限為30人，生師比 1:15。15人以下置1人，16~30人置2人。";
+      } else if (type === 'mixed') {
+        maxAllowed = 15;
+        reqTeachers = (count <= 8) ? 1 : 2;
+        if (count > 15) isCompliant = false;
+        noteText = "混齡班若編入2歲幼兒，全班人數上限與生師比應從嚴比照2歲專班規定辦理。";
+      }
+
+      maxEl.innerText = `${maxAllowed} 人`;
+      teacherEl.innerText = `${reqTeachers} 名`;
+
+      if (count > maxAllowed) {
+        statusEl.innerText = `超收違法（超過每班上限 ${maxAllowed} 人）`;
+        statusEl.className = "font-bold text-rose-600";
+      } else if (count <= 0) {
+        statusEl.innerText = "請輸入幼兒人數";
+        statusEl.className = "font-bold text-slate-500";
+      } else {
+        statusEl.innerText = "合規配置";
+        statusEl.className = "font-bold text-emerald-600";
+      }
+
+      noteEl.innerText = noteText;
+    }
+  </script>
+</body>
+</html>
